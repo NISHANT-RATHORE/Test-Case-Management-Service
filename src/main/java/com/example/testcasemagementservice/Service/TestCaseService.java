@@ -3,6 +3,7 @@ package com.example.testcasemagementservice.Service;
 import com.example.testcasemagementservice.DTO.AddTestCaseDto;
 import com.example.testcasemagementservice.Enums.Priority;
 import com.example.testcasemagementservice.Enums.Status;
+import com.example.testcasemagementservice.Exceptions.DuplicateResourceException;
 import com.example.testcasemagementservice.Exceptions.ResourceNotFoundException;
 import com.example.testcasemagementservice.Mapper.TestCaseMapper;
 import com.example.testcasemagementservice.Model.TestCase;
@@ -19,13 +20,14 @@ public class TestCaseService {
 
     private final TestCaseRepository testCaseRepository;
     private final PriorityContext priorityContext = new PriorityContext();
+
     public TestCaseService(TestCaseRepository testCaseRepository) {
         this.testCaseRepository = testCaseRepository;
     }
 
     public TestCase createTestCase(AddTestCaseDto addTestCaseDto) {
-        if(testCaseRepository.existsByTitle(addTestCaseDto.getTitle())){
-            throw new ResourceNotFoundException("Test case already exists with title: " + addTestCaseDto.getTitle());
+        if (testCaseRepository.existsByTitle(addTestCaseDto.getTitle())) {
+            throw new DuplicateResourceException("Test case already exists with title: " + addTestCaseDto.getTitle());
         }
         priorityContext.setStrategy(addTestCaseDto.getPriority());
         priorityContext.applyStrategy();
@@ -34,7 +36,8 @@ public class TestCaseService {
     }
 
     public Optional<TestCase> getTestCaseById(String id) {
-        return testCaseRepository.findById(id);
+        return Optional.ofNullable(testCaseRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Test case not found with id: " + id)));
     }
 
     public TestCase updateTestCase(String id, AddTestCaseDto addTestCaseDto) {
@@ -51,7 +54,7 @@ public class TestCaseService {
                     if (addTestCaseDto.getPriority() != null) {
                         existingTestCase.setPriority(addTestCaseDto.getPriority());
                     }
-                    if(addTestCaseDto.getStatus() != null){
+                    if (addTestCaseDto.getStatus() != null) {
                         existingTestCase.setStatus(addTestCaseDto.getStatus());
                     }
 
@@ -75,11 +78,11 @@ public class TestCaseService {
         }
     }
 
-    public boolean deleteTestCase(String id) {
-        if (!testCaseRepository.existsById(id)) {
-            return false;
-        }
-        testCaseRepository.deleteById(id);
-        return true;
+    public void deleteTestCase(String id) {
+        TestCase testCase = testCaseRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Test case not found with id: " + id));
+
+        testCaseRepository.delete(testCase);
     }
+
 }

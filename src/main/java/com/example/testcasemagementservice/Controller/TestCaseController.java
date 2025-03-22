@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,22 +29,26 @@ public class TestCaseController {
     }
 
     @PostMapping
-    public ResponseEntity<TestCase> createTestCase(@Valid @RequestBody AddTestCaseDto addTestCaseDto){
+    public ResponseEntity<TestCase> createTestCase(@Valid @RequestBody AddTestCaseDto addTestCaseDto) {
         log.info("Creating new test case with title: {}", addTestCaseDto.getTitle());
-        if(addTestCaseDto.getTitle() == null){
+
+        if (addTestCaseDto.getTitle() == null) {
             log.error("Title cannot be null");
-            throw new InvalidDataException("Title cannot be null");
+            throw new ResourceNotFoundException("Title cannot be null");
         }
+
         TestCase testCase = testCaseService.createTestCase(addTestCaseDto);
         log.info("Test case created successfully with id: {}", testCase.getId());
-        return ResponseEntity.ok(testCase);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(testCase);
     }
 
+
     @GetMapping("/{id}")
-    public ResponseEntity<TestCase> getTestCase(@PathVariable String id){
+    public ResponseEntity<TestCase> getTestCase(@PathVariable String id) {
         log.info("Fetching test case with id: {}", id);
         Optional<TestCase> testCase = testCaseService.getTestCaseById(id);
-        if(testCase.isEmpty()){
+        if (testCase.isEmpty()) {
             log.error("Test case not found with id: {}", id);
             throw new ResourceNotFoundException("Test case not found with id: " + id);
         }
@@ -52,7 +57,7 @@ public class TestCaseController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<TestCase>> getAllTestCases(Pageable pageable, @RequestParam(required = false) Status status, @RequestParam(required = false) Priority priority){
+    public ResponseEntity<Page<TestCase>> getAllTestCases(Pageable pageable, @RequestParam(required = false) Status status, @RequestParam(required = false) Priority priority) {
         log.info("Fetching all test cases with status: {} and priority: {}", status, priority);
         Page<TestCase> testCases = testCaseService.getAllTestCases(pageable, status, priority);
         if (testCases.isEmpty()) {
@@ -64,7 +69,7 @@ public class TestCaseController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<TestCase> updateTestCase(@PathVariable String id,@Valid @RequestBody AddTestCaseDto addTestCaseDto) {
+    public ResponseEntity<TestCase> updateTestCase(@PathVariable String id, @Valid @RequestBody AddTestCaseDto addTestCaseDto) {
         log.info("Updating test case with id: {}", id);
         TestCase testCase = testCaseService.updateTestCase(id, addTestCaseDto);
         if (testCase == null) {
@@ -76,14 +81,11 @@ public class TestCaseController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteTestCase(@PathVariable String id) {
+    public ResponseEntity<Void> deleteTestCase(@PathVariable String id) {
         log.info("Deleting test case with id: {}", id);
-        boolean deleted = testCaseService.deleteTestCase(id);
-        if (!deleted) {
-            log.error("Test case not found with id: {}", id);
-            throw new ResourceNotFoundException("Test case not found with id: " + id);
-        }
+        testCaseService.deleteTestCase(id);  // This should throw ResourceNotFoundException if not found
         log.info("Test case deleted successfully with id: {}", id);
-        return ResponseEntity.ok("Test case deleted successfully");
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build(); // 204 No Content
     }
+
 }
