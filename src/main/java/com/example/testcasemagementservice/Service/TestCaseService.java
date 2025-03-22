@@ -7,6 +7,7 @@ import com.example.testcasemagementservice.Exceptions.ResourceNotFoundException;
 import com.example.testcasemagementservice.Mapper.TestCaseMapper;
 import com.example.testcasemagementservice.Model.TestCase;
 import com.example.testcasemagementservice.Repository.TestCaseRepository;
+import com.example.testcasemagementservice.Strategy.PriorityContext;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -17,12 +18,17 @@ import java.util.Optional;
 public class TestCaseService {
 
     private final TestCaseRepository testCaseRepository;
-
+    private final PriorityContext priorityContext = new PriorityContext();
     public TestCaseService(TestCaseRepository testCaseRepository) {
         this.testCaseRepository = testCaseRepository;
     }
 
     public TestCase createTestCase(AddTestCaseDto addTestCaseDto) {
+        if(testCaseRepository.existsByTitle(addTestCaseDto.getTitle())){
+            throw new ResourceNotFoundException("Test case already exists with title: " + addTestCaseDto.getTitle());
+        }
+        priorityContext.setStrategy(addTestCaseDto.getPriority());
+        priorityContext.applyStrategy();
         TestCase newTestCase = TestCaseMapper.mapToTest(addTestCaseDto);
         return testCaseRepository.save(newTestCase);
     }

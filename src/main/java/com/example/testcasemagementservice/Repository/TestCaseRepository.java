@@ -3,6 +3,8 @@ package com.example.testcasemagementservice.Repository;
 import com.example.testcasemagementservice.Enums.Priority;
 import com.example.testcasemagementservice.Enums.Status;
 import com.example.testcasemagementservice.Model.TestCase;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
@@ -21,4 +23,6 @@ public interface TestCaseRepository extends MongoRepository<TestCase, String> {
     Page<TestCase> findAllByStatus(Pageable pageable, Status status);
 
     Page<TestCase> findAllByStatusAndPriority(Pageable pageable, Status status, Priority priority);
+
+    boolean existsByTitle(String title);
 }

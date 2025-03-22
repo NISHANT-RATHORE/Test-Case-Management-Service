@@ -22,6 +22,7 @@ public class TestCase {
     @Id
     String id;
 
+    @Indexed(unique = true)
     String title;
 
     String description;
