@@ -7,6 +7,7 @@ import com.example.testcasemagementservice.Exceptions.InvalidDataException;
 import com.example.testcasemagementservice.Exceptions.ResourceNotFoundException;
 import com.example.testcasemagementservice.Model.TestCase;
 import com.example.testcasemagementservice.Service.TestCaseService;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,7 +28,7 @@ public class TestCaseController {
     }
 
     @PostMapping
-    public ResponseEntity<TestCase> createTestCase(@RequestBody AddTestCaseDto addTestCaseDto){
+    public ResponseEntity<TestCase> createTestCase(@Valid @RequestBody AddTestCaseDto addTestCaseDto){
         log.info("Creating new test case with title: {}", addTestCaseDto.getTitle());
         if(addTestCaseDto.getTitle() == null){
             log.error("Title cannot be null");
@@ -63,7 +64,7 @@ public class TestCaseController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<TestCase> updateTestCase(@PathVariable String id, @RequestBody AddTestCaseDto addTestCaseDto) {
+    public ResponseEntity<TestCase> updateTestCase(@PathVariable String id,@Valid @RequestBody AddTestCaseDto addTestCaseDto) {
         log.info("Updating test case with id: {}", id);
         TestCase testCase = testCaseService.updateTestCase(id, addTestCaseDto);
         if (testCase == null) {

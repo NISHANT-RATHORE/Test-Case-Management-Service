@@ -7,6 +7,7 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
@@ -20,9 +21,15 @@ import java.util.Date;
 public class TestCase {
     @Id
     String id;
+
     String title;
+
     String description;
+
+    @Indexed
     Status status;
+
+    @Indexed
     Priority priority;
 
     @CreatedDate
